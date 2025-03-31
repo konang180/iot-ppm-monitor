@@ -1,15 +1,12 @@
-# Use the official PHP image from Docker Hub
-FROM php:8.1-apache
+# Use the official PHP Apache image
+FROM php:7.4-apache
 
-# Enable mod_rewrite for clean URLs
+# Install the PostgreSQL development libraries and PHP extension for PostgreSQL
+RUN apt-get update && apt-get install -y libpq-dev \
+    && docker-php-ext-install pgsql pdo_pgsql
+
+# Enable Apache mod_rewrite (if needed for URL rewriting)
 RUN a2enmod rewrite
 
-# Copy the current directory content to the Apache server
+# Copy your project files into the container
 COPY . /var/www/html/
-
-# Expose port 80 (default for Apache)
-EXPOSE 80
-# Install PHP PostgreSQL extension
-RUN apt-get update && apt-get install -y \
-    php-pgsql
-
