@@ -9,3 +9,7 @@ COPY . /var/www/html/
 
 # Expose port 80 (default for Apache)
 EXPOSE 80
+# Install PHP PostgreSQL extension
+RUN apt-get update && apt-get install -y \
+    php-pgsql
+
