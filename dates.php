@@ -13,6 +13,7 @@ if (!$conn) {
 
 $location = isset($_GET['location']) ? $_GET['location'] : '';
 
+
 if (!$location) {
     echo "Location not specified.";
     exit;
