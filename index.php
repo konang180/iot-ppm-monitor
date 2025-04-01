@@ -118,7 +118,19 @@ $locations = pg_fetch_all($location_result);
         <?php if ($locations): ?>
             <?php foreach ($locations as $loc): ?>
                 <button class="location-button" onclick="window.location.href='dates.php?location=<?= urlencode($loc['location_id']) ?>'">
-    Location <?= htmlspecialchars($loc['location_id']) ?>
+     <?php
+// Assuming you already have a database connection $conn
+$location_id = $loc['location_id']; // Get location_id from $loc
+
+// Query to fetch location name using the location_id
+$query = "SELECT name FROM locations WHERE id = $1";
+$result = pg_query_params($conn, $query, array($location_id));
+
+if ($result && pg_num_rows($result) > 0) {
+    $location = pg_fetch_assoc($result);
+    $location_name = $location['name']; // Get the location name
+    echo  $location_name;
+} ?>
 </button>
                 </button>
             <?php endforeach; ?>
