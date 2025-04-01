@@ -10,17 +10,15 @@ $conn = pg_connect("host=$host port=$port dbname=$dbname user=$user password=$pa
 if (!$conn) {
     die("Connection failed: " . pg_last_error());
 }
+$location_id = isset($_GET['location']) ? $_GET['location'] : '';
 
-$location = isset($_GET['location']) ? $_GET['location'] : '';
-
-
-if (!$location) {
-    echo "Location not specified.";
+if (empty($location_id)) {
+    echo "Invalid location!";
     exit;
 }
 
 // Fetch location_id based on location name
-$loc_query = "SELECT id, name FROM locations WHERE name = '$location'";
+$loc_query = "SELECT id, name FROM locations WHERE id = '$location'";
 $loc_result = pg_query($conn, $loc_query);
 $loc_data = pg_fetch_assoc($loc_result);
 
