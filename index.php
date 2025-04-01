@@ -6,20 +6,39 @@ $dbname = "mydb_xyz123";
 $user = "konang";
 $password = "HbpK0zGuFkHURjPM9pK5c5fGZo6pIjOU";
 
+// Connect to PostgreSQL
 $conn = pg_connect("host=$host port=$port dbname=$dbname user=$user password=$password");
+
 if (!$conn) {
     die("Database connection failed!");
 }
 
-// Fetch distinct locations for history
-$locationQuery = "SELECT DISTINCT location FROM pollution_data ORDER BY location ASC";
-$locationResult = pg_query($conn, $locationQuery);
+// Fetch all distinct locations
+$query_locations = "
+    SELECT DISTINCT l.name AS location 
+    FROM pollution_data p
+    JOIN locations l ON p.location_id = l.id
+    ORDER BY location ASC";
 
-// Fetch live data (latest entry)
-$liveQuery = "SELECT location, recorded_date, recorded_hour, average_ppm FROM pollution_data ORDER BY recorded_date DESC, recorded_hour DESC LIMIT 1";
-$liveResult = pg_query($conn, $liveQuery);
-$liveData = pg_fetch_assoc($liveResult);
-pg_close($conn);
+$result_locations = pg_query($conn, $query_locations);
+
+if (!$result_locations) {
+    die("Error fetching locations: " . pg_last_error($conn));
+}
+
+// Fetch latest pollution data
+$query_latest = "
+    SELECT l.name AS location, p.recorded_date, p.recorded_hour, p.average_ppm 
+    FROM pollution_data p
+    JOIN locations l ON p.location_id = l.id
+    ORDER BY p.recorded_date DESC, p.recorded_hour DESC
+    LIMIT 10";  // Show only recent 10 entries
+
+$result_latest = pg_query($conn, $query_latest);
+
+if (!$result_latest) {
+    die("Error fetching latest data: " . pg_last_error($conn));
+}
 ?>
 
 <!DOCTYPE html>
@@ -27,81 +46,103 @@ pg_close($conn);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pollution Data Dashboard</title>
+    <title>Pollution Data</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
             text-align: center;
+            background-color: #f4f4f4;
         }
-        .container {
-            width: 80%;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-        }
-        .tabs button {
+        .tab {
+            display: inline-block;
             padding: 10px 20px;
-            cursor: pointer;
-            border: none;
-            background: #007BFF;
-            color: white;
             margin: 5px;
+            background: #333;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
         }
-        .tabs button:hover { background: #0056b3; }
-        .tab-content { display: none; margin-top: 20px; }
-        .active { display: block; }
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        .tab.active {
+            background: #555;
+        }
+        .content {
+            display: none;
             margin-top: 20px;
+        }
+        .content.active {
+            display: block;
+        }
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background: white;
         }
         th, td {
             border: 1px solid black;
             padding: 10px;
         }
-        th { background: #333; color: white; }
+        th {
+            background-color: #333;
+            color: white;
+        }
+        a {
+            text-decoration: none;
+            color: blue;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Pollution Data Dashboard</h2>
-    <div class="tabs">
-        <button onclick="showTab('live')">Live Data</button>
-        <button onclick="showTab('history')">History</button>
-    </div>
+<h2>Pollution Data</h2>
 
-    <div id="live" class="tab-content active">
-        <h3>Current Live Data</h3>
-        <p><strong>Location:</strong> <?= htmlspecialchars($liveData['location'] ?? 'No Data') ?></p>
-        <p><strong>Date:</strong> <?= htmlspecialchars($liveData['recorded_date'] ?? 'No Data') ?></p>
-        <p><strong>Hour:</strong> <?= htmlspecialchars($liveData['recorded_hour'] ?? 'No Data') ?>:00</p>
-        <p><strong>PPM:</strong> <?= htmlspecialchars($liveData['average_ppm'] ?? 'No Data') ?></p>
-    </div>
+<!-- Tab Menu -->
+<div>
+    <div class="tab active" onclick="showTab('live')">Live Data</div>
+    <div class="tab" onclick="showTab('history')">History</div>
+</div>
 
-    <div id="history" class="tab-content">
-        <h3>History</h3>
-        <table>
-            <tr><th>Location</th></tr>
-            <?php while ($row = pg_fetch_assoc($locationResult)) : ?>
-                <tr>
-                    <td><a href="dates.php?location=<?= urlencode($row['location']) ?>">
-                        <?= htmlspecialchars($row['location']) ?></a></td>
-                </tr>
-            <?php endwhile; ?>
-        </table>
-    </div>
+<!-- Live Data -->
+<div id="live" class="content active">
+    <h3>Live Data (Latest Records)</h3>
+    <table>
+        <tr>
+            <th>Location</th>
+            <th>Date</th>
+            <th>Hour</th>
+            <th>Average PPM</th>
+        </tr>
+        <?php while ($row = pg_fetch_assoc($result_latest)) : ?>
+        <tr>
+            <td><?= htmlspecialchars($row['location']) ?></td>
+            <td><?= htmlspecialchars($row['recorded_date']) ?></td>
+            <td><?= htmlspecialchars($row['recorded_hour']) ?>:00</td>
+            <td><?= htmlspecialchars($row['average_ppm']) ?></td>
+        </tr>
+        <?php endwhile; ?>
+    </table>
+</div>
+
+<!-- History -->
+<div id="history" class="content">
+    <h3>Pollution History by Location</h3>
+    <ul>
+        <?php while ($row = pg_fetch_assoc($result_locations)) : ?>
+            <li><a href="dates.php?location=<?= urlencode($row['location']) ?>"><?= htmlspecialchars($row['location']) ?></a></li>
+        <?php endwhile; ?>
+    </ul>
 </div>
 
 <script>
-    function showTab(tabId) {
-        document.querySelectorAll('.tab-content').forEach(tab => {
-            tab.classList.remove('active');
-        });
-        document.getElementById(tabId).classList.add('active');
+    function showTab(tabName) {
+        document.querySelectorAll('.content').forEach(div => div.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+        document.getElementById(tabName).classList.add('active');
+        document.querySelector(`.tab[onclick="showTab('${tabName}')"]`).classList.add('active');
     }
 </script>
+
 </body>
 </html>
+
+<?php pg_close($conn); ?>
