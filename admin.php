@@ -24,7 +24,10 @@ if (isset($_POST['update_location'])) {
     $location_id = $_POST['location_id'];
     $new_name = pg_escape_string($_POST['new_name']);
     $query = "UPDATE locations SET name = '$new_name' WHERE id = '$location_id'";
-    pg_query($conn, $query);
+    $result = pg_query($conn, $query);
+    if (!$result) {
+        echo "Error updating location: " . pg_last_error($conn);
+    }
 }
 
 // Handle activating a location (set status to 't' for selected location, 'f' for others)
@@ -35,7 +38,11 @@ if (isset($_POST['set_active_location'])) {
     pg_query($conn, "UPDATE locations SET status = 'f'");
 
     // Activate the selected location
-    pg_query($conn, "UPDATE locations SET status = 't' WHERE id = '$location_id'");
+    $query = "UPDATE locations SET status = 't' WHERE id = '$location_id'";
+    $result = pg_query($conn, $query);
+    if (!$result) {
+        echo "Error setting active location: " . pg_last_error($conn);
+    }
 }
 
 // Fetch all locations
@@ -118,6 +125,10 @@ pg_close($conn);
         }
         .form-btn:hover {
             background-color: #45a049;
+        }
+
+        .update-location-form {
+            display: none;
         }
     </style>
 </head>
