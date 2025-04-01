@@ -110,6 +110,7 @@ $locations = pg_fetch_all($location_result);
         <h2>Live Air Pollution Data</h2>
         <p><strong>Location:</strong> <span id="live-location">Fetching...</span></p>
         <p><strong>PPM:</strong> <span id="live-ppm">Fetching...</span></p>
+        <p><strong>time:</strong> <span id="timestamp">Fetching...</span></p>
     </div>
     
     <div id="history" class="tab-content">
@@ -139,6 +140,8 @@ $locations = pg_fetch_all($location_result);
             .then(data => {
                 document.getElementById('live-location').textContent = data.location || 'N/A';
                 document.getElementById('live-ppm').textContent = data.average_ppm || 'N/A';
+                document.getElementById('timestamp').textContent = data.timestamp || 'N/A';
+                
             })
             .catch(error => console.error('Error fetching live data:', error));
     }

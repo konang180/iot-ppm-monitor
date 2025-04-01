@@ -17,36 +17,37 @@ if (!$conn) {
     exit;
 }
 
-// Fetch the latest active location
-$query = "SELECT id, name FROM locations ORDER BY id DESC LIMIT 1";
+// Fetch the active location from the database
+$query = "SELECT name FROM locations WHERE status = TRUE LIMIT 1";
 $result = pg_query($conn, $query);
 
 if (!$result || pg_num_rows($result) == 0) {
     echo json_encode(["error" => "No active location found"]);
+    pg_close($conn);
     exit;
 }
 
 $location = pg_fetch_assoc($result);
-$location_id = $location['id'];
+$location_name = $location['name'];
 
-// Fetch the latest pollution data for this location
-$query = "
-    SELECT average_ppm, recorded_date, recorded_hour 
-    FROM pollution_data 
-    WHERE location_id = $location_id 
-    ORDER BY recorded_date DESC, recorded_hour DESC 
-    LIMIT 1";
-$result = pg_query($conn, $query);
+// Get the ppm data from the POST request (simulating NodeMCU data)
+$ppm = $_POST['ppm'] ?? null;
 
-if (!$result || pg_num_rows($result) == 0) {
-    echo json_encode(["error" => "No data recorded for this location"]);
+if ($ppm === null) {
+    echo json_encode(["error" => "No PPM data received"]);
+    pg_close($conn);
     exit;
 }
 
-$data = pg_fetch_assoc($result);
-$data['location'] = $location['name'];
+// Prepare the data to send back (with location and ppm)
+$data = [
+    "average_ppm" => $ppm,
+    "location" => $location_name,
+    "timestamp" => date('Y-m-d H:i:s') // Add current timestamp
+];
 
 echo json_encode($data);
 
+// Close the database connection
 pg_close($conn);
 ?>
