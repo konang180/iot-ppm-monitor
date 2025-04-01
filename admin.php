@@ -24,24 +24,22 @@ if (isset($_POST['update_location'])) {
     $location_id = $_POST['location_id'];
     $new_name = pg_escape_string($_POST['new_name']);
     $query = "UPDATE locations SET name = '$new_name' WHERE id = '$location_id'";
-    $result = pg_query($conn, $query);
-    if (!$result) {
-        echo "Error updating location: " . pg_last_error($conn);
-    }
+    pg_query($conn, $query);
 }
 
 // Handle activating a location (set status to 't' for selected location, 'f' for others)
 if (isset($_POST['set_active_location'])) {
-    $location_id = $_POST['location_id'];
+    $location_id = $_POST['set_active_location'];
 
-    // Set all locations to inactive
-    pg_query($conn, "UPDATE locations SET status = 'f'");
+    // Validate that the location ID is an integer
+    if (is_numeric($location_id) && intval($location_id) > 0) {
+        // Set all locations to inactive
+        pg_query($conn, "UPDATE locations SET status = 'f'");
 
-    // Activate the selected location
-    $query = "UPDATE locations SET status = 't' WHERE id = '$location_id'";
-    $result = pg_query($conn, $query);
-    if (!$result) {
-        echo "Error setting active location: " . pg_last_error($conn);
+        // Activate the selected location
+        pg_query($conn, "UPDATE locations SET status = 't' WHERE id = '$location_id'");
+    } else {
+        echo "Invalid location ID.";
     }
 }
 
@@ -126,10 +124,6 @@ pg_close($conn);
         .form-btn:hover {
             background-color: #45a049;
         }
-
-        .update-location-form {
-            display: none;
-        }
     </style>
 </head>
 <body>
@@ -200,6 +194,7 @@ pg_close($conn);
     }
 
     function setActiveLocation(id) {
+        console.log("Location ID: " + id); // Debugging line to check id value
         if (confirm("Are you sure you want to make this location active?")) {
             const form = document.createElement('form');
             form.method = 'POST';
