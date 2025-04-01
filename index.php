@@ -55,7 +55,7 @@ $locations = pg_fetch_all($location_result);
             padding: 12px 30px;
             border: none;
             border-radius: 30px;
-            background: linear-gradient(to right, #ff7e5f, #feb47b);
+            background: linear-gradient(to right, 01841, 014122);
             color: white;
             cursor: pointer;
             font-size: 18px;
