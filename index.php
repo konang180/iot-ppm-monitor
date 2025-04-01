@@ -41,25 +41,30 @@ $locations = pg_fetch_all($location_result);
             backdrop-filter: blur(10px);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
         .tab-menu {
             display: flex;
-            justify-content: flex-start;
-            gap: 30px;
+            justify-content: center;
+            gap: 20px;
             margin-bottom: 30px;
-            padding-top: 20px;
         }
         .tab-button {
             padding: 12px 30px;
             border: none;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            background: linear-gradient(to right, #ff7e5f, #feb47b);
             color: white;
             cursor: pointer;
             font-size: 18px;
             transition: 0.3s;
+            font-weight: bold;
         }
         .tab-button:hover {
-            background: rgba(255, 255, 255, 0.4);
+            background: linear-gradient(to right, #feb47b, #ff7e5f);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
         }
         .tab-content {
             display: none;
@@ -112,7 +117,8 @@ $locations = pg_fetch_all($location_result);
         <?php if ($locations): ?>
             <?php foreach ($locations as $loc): ?>
                 <button class="location-button" onclick="window.location.href='dates.php?location=<?= urlencode($loc['location_id']) ?>'">
-                    Location <?= htmlspecialchars($loc['location_id']) ?>
+    Location <?= htmlspecialchars($loc['location_id']) ?>
+</button>
                 </button>
             <?php endforeach; ?>
         <?php else: ?>
