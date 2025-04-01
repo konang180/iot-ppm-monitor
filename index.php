@@ -28,32 +28,37 @@ $locations = pg_fetch_all($location_result);
         body {
             font-family: Arial, sans-serif;
             background: linear-gradient(to bottom, black, #1a1a40);
-            text-align: center;
+            color: white;
             margin: 0;
             padding: 0;
         }
         .container {
             width: 80%;
             margin: 50px auto;
-            padding: 20px;
-            border-radius: 15px;
+            padding: 30px;
+            border-radius: 20px;
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
         .tab-menu {
             display: flex;
             justify-content: center;
-            gap: 20px;
+            gap: 30px;
+            margin-bottom: 30px;
         }
         .tab-button {
-            padding: 10px 20px;
+            padding: 12px 30px;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             background: rgba(255, 255, 255, 0.2);
             color: white;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 18px;
             transition: 0.3s;
         }
         .tab-button:hover {
@@ -66,23 +71,36 @@ $locations = pg_fetch_all($location_result);
             display: block;
         }
         .location-button {
-            padding: 10px;
-            margin: 5px;
+            padding: 12px 30px;
+            margin: 10px;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             background: rgba(255, 255, 255, 0.2);
             color: white;
             cursor: pointer;
+            font-size: 18px;
             transition: 0.3s;
         }
         .location-button:hover {
             background: rgba(255, 255, 255, 0.4);
+        }
+        @media (max-width: 600px) {
+            .container {
+                width: 90%;
+                padding: 20px;
+            }
+            .tab-menu {
+                flex-direction: column;
+                gap: 20px;
+            }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <h1>Pollution Monitoring System</h1>
+
     <div class="tab-menu">
         <button class="tab-button" onclick="showTab('live')">Live Data</button>
         <button class="tab-button" onclick="showTab('history')">History</button>
@@ -123,6 +141,7 @@ $locations = pg_fetch_all($location_result);
             })
             .catch(error => console.error('Error fetching live data:', error));
     }
+
     setInterval(fetchLiveData, 5000);
 </script>
 
