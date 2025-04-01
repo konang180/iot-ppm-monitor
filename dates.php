@@ -12,10 +12,9 @@ if (!$conn) {
 }
 
 $location = isset($_GET['location']) ? $_GET['location'] : '';
-$date = isset($_GET['date']) ? $_GET['date'] : '';
 
-if (!$location || !$date) {
-    echo "Location or Date not specified.";
+if (!$location) {
+    echo "Location not specified.";
     exit;
 }
 
@@ -32,26 +31,11 @@ if (!$loc_data) {
 $location_id = $loc_data['id'];
 $location_name = $loc_data['name'];
 
-// Fetch average ppm for each hour on the selected date
-$query = "
-    SELECT recorded_hour, AVG(average_ppm) AS average_ppm
-    FROM pollution_data
-    WHERE location_id = '$location_id' AND recorded_date = '$date'
-    GROUP BY recorded_hour
-    ORDER BY recorded_hour ASC
-";
+// Fetch unique dates for this location
+$query = "SELECT DISTINCT DATE(recorded_date) AS date FROM pollution_data WHERE location_id = '$location_id' ORDER BY date DESC";
 $result = pg_query($conn, $query);
-$ppm_data = pg_fetch_all($result);
+$dates = pg_fetch_all($result);
 pg_close($conn);
-
-if (!$ppm_data) {
-    echo "No data available for this location and date.";
-    exit;
-}
-
-// Prepare data for the chart
-$hours = array_column($ppm_data, 'recorded_hour');
-$average_ppms = array_column($ppm_data, 'average_ppm');
 ?>
 
 <!DOCTYPE html>
@@ -59,8 +43,7 @@ $average_ppms = array_column($ppm_data, 'average_ppm');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PPM Graph - <?php echo htmlspecialchars($location_name); ?> on <?php echo htmlspecialchars($date); ?></title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Recorded Dates - <?php echo htmlspecialchars($location_name); ?></title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -71,7 +54,7 @@ $average_ppms = array_column($ppm_data, 'average_ppm');
             padding: 0;
         }
         .container {
-            max-width: 800px;
+            max-width: 600px;
             margin: 20px auto;
             padding: 20px;
             background: rgba(255, 255, 255, 0.1);
@@ -82,52 +65,60 @@ $average_ppms = array_column($ppm_data, 'average_ppm');
         h1 {
             font-size: 22px;
         }
-        canvas {
-            max-width: 100%;
+        .date-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            padding: 0;
+        }
+        .date-list button {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            color: white;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .date-list button:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(1.05);
+        }
+        @media (max-width: 600px) {
+            .container {
+                width: 90%;
+                padding: 15px;
+            }
+            .date-list {
+                flex-direction: column;
+            }
+            .date-list button {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>PPM Graph for <?php echo htmlspecialchars($location_name); ?> on <?php echo htmlspecialchars($date); ?></h1>
-    <canvas id="ppmChart"></canvas>
-</div>
+    <h1>Recorded Dates for <?php echo htmlspecialchars($location_name); ?></h1>
 
-<script>
-    var ctx = document.getElementById('ppmChart').getContext('2d');
-    var ppmChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: <?php echo json_encode($hours); ?>,  // Hours of the day
-            datasets: [{
-                label: 'Average PPM',
-                data: <?php echo json_encode($average_ppms); ?>,  // Average PPM values
-                borderColor: 'rgba(75, 192, 192, 1)',
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                fill: true,
-                tension: 0.1
-            }]
-        },
-        options: {
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Hour of the Day'
-                    }
-                },
-                y: {
-                    title: {
-                        display: true,
-                        text: 'Average PPM'
-                    },
-                    min: 0
-                }
+    <div class="date-list">
+        <?php
+        if ($dates) {
+            foreach ($dates as $row) {
+                echo "<button onclick=\"window.location.href='graph.php?location=" . urlencode($location_name) . "&date=" . urlencode($row['date']) . "'\">" . htmlspecialchars($row['date']) . "</button>";
             }
+        } else {
+            echo "<p>No data recorded for this location.</p>";
         }
-    });
-</script>
+        ?>
+    </div>
+</div>
 
 </body>
 </html>
