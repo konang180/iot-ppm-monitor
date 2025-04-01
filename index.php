@@ -1,25 +1,20 @@
 <?php
-// Database connection
 $host = "dpg-cvlai4vgi27c73dm6eb0-a.singapore-postgres.render.com";
 $port = "5432";
 $dbname = "mydb_xyz123";
 $user = "konang";
 $password = "HbpK0zGuFkHURjPM9pK5c5fGZo6pIjOU";
 
-// Connect to PostgreSQL
 $conn = pg_connect("host=$host port=$port dbname=$dbname user=$user password=$password");
-
 if (!$conn) {
-    die("Database connection failed!");
+    die("Connection failed: " . pg_last_error());
 }
 
-// Fetch pollution data
-$query = "
-    SELECT l.name AS location, p.recorded_date, p.recorded_hour, p.average_ppm 
-    FROM pollution_data p
-    JOIN locations l ON p.location_id = l.id
-    ORDER BY p.recorded_date DESC, p.recorded_hour DESC";
+// Fetch unique locations
+$query = "SELECT DISTINCT location FROM air_quality_data";
 $result = pg_query($conn, $query);
+$locations = pg_fetch_all($result);
+pg_close($conn);
 ?>
 
 <!DOCTYPE html>
@@ -27,50 +22,88 @@ $result = pg_query($conn, $query);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pollution Data</title>
+    <title>Air Quality Monitoring</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            background-color: #f4f4f4;
         }
-        table {
-            width: 80%;
-            margin: 20px auto;
-            border-collapse: collapse;
-            background: white;
+        .tab-container {
+            margin: 20px;
         }
-        th, td {
-            border: 1px solid black;
-            padding: 10px;
-        }
-        th {
-            background-color: #333;
+        .tab {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            background: #007bff;
             color: white;
+            border-radius: 5px;
+        }
+        .tab:hover {
+            background: #0056b3;
+        }
+        .tab-content {
+            display: none;
+            margin-top: 20px;
+        }
+        .active {
+            display: block;
+        }
+        .location-list {
+            list-style: none;
+            padding: 0;
+        }
+        .location-list li {
+            margin: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .location-list li:hover {
+            background: #e2e6ea;
         }
     </style>
+    <script>
+        function showTab(tabId) {
+            document.getElementById('live-tab').classList.remove('active');
+            document.getElementById('history-tab').classList.remove('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+    </script>
 </head>
 <body>
 
-<h2>Pollution Data</h2>
-<table>
-    <tr>
-        <th>Location</th>
-        <th>Date</th>
-        <th>Hour</th>
-        <th>Average PPM</th>
-    </tr>
-    <?php while ($row = pg_fetch_assoc($result)) : ?>
-    <tr>
-        <td><?= htmlspecialchars($row['location']) ?></td>
-        <td><?= htmlspecialchars($row['recorded_date']) ?></td>
-        <td><?= htmlspecialchars($row['recorded_hour']) ?>:00</td>
-        <td><?= htmlspecialchars($row['average_ppm']) ?></td>
-    </tr>
-    <?php endwhile; ?>
-</table>
+<h1>Air Quality Monitoring</h1>
+
+<div class="tab-container">
+    <div class="tab" onclick="showTab('live-tab')">Live Data</div>
+    <div class="tab" onclick="showTab('history-tab')">History</div>
+</div>
+
+<!-- Live Data (To be implemented later) -->
+<div id="live-tab" class="tab-content">
+    <h2>Live Data</h2>
+    <p>Coming soon...</p>
+</div>
+
+<!-- History Tab -->
+<div id="history-tab" class="tab-content active">
+    <h2>Recorded Locations</h2>
+    <ul class="location-list">
+        <?php
+        if ($locations) {
+            foreach ($locations as $row) {
+                echo "<li onclick=\"window.location.href='dates.php?location=" . urlencode($row['location']) . "'\">" . htmlspecialchars($row['location']) . "</li>";
+            }
+        } else {
+            echo "<p>No data recorded yet.</p>";
+        }
+        ?>
+    </ul>
+</div>
 
 </body>
 </html>
-
-<?php pg_close($conn); ?>
