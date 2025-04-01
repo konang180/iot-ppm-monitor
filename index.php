@@ -41,15 +41,12 @@ $locations = pg_fetch_all($location_result);
             backdrop-filter: blur(10px);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
-        h1 {
-            font-size: 28px;
-            margin-bottom: 20px;
-        }
         .tab-menu {
             display: flex;
-            justify-content: center;
+            justify-content: flex-start;
             gap: 30px;
             margin-bottom: 30px;
+            padding-top: 20px;
         }
         .tab-button {
             padding: 12px 30px;
@@ -99,8 +96,6 @@ $locations = pg_fetch_all($location_result);
 <body>
 
 <div class="container">
-    <h1>Pollution Monitoring System</h1>
-
     <div class="tab-menu">
         <button class="tab-button" onclick="showTab('live')">Live Data</button>
         <button class="tab-button" onclick="showTab('history')">History</button>
@@ -116,7 +111,7 @@ $locations = pg_fetch_all($location_result);
         <h2>Location History</h2>
         <?php if ($locations): ?>
             <?php foreach ($locations as $loc): ?>
-                <button class="location-button" onclick="window.location.href='dates.php?location=<?= $loc['location_id'] ?>'">
+                <button class="location-button" onclick="window.location.href='dates.php?location=<?= urlencode($loc['location_id']) ?>'">
                     Location <?= htmlspecialchars($loc['location_id']) ?>
                 </button>
             <?php endforeach; ?>
