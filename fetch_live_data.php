@@ -31,7 +31,7 @@ $location_id = $location['id'];
 
 // Fetch the latest pollution data for this location
 $query = "
-    SELECT ppm, recorded_date, recorded_hour 
+    SELECT average_ppm, recorded_date, recorded_hour 
     FROM pollution_data 
     WHERE location_id = $location_id 
     ORDER BY recorded_date DESC, recorded_hour DESC 
