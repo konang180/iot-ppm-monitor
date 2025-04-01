@@ -1,4 +1,5 @@
 <?php
+// Database connection
 $host = "dpg-cvlai4vgi27c73dm6eb0-a.singapore-postgres.render.com";
 $port = "5432";
 $dbname = "mydb_xyz123";
@@ -10,6 +11,7 @@ $conn = pg_connect("host=$host port=$port dbname=$dbname user=$user password=$pa
 if (!$conn) {
     die("Connection failed: " . pg_last_error());
 }
+
 $location_id = isset($_GET['location']) ? $_GET['location'] : '';
 
 if (empty($location_id)) {
@@ -17,9 +19,9 @@ if (empty($location_id)) {
     exit;
 }
 
-// Fetch location_id based on location name
-$loc_query = "SELECT id, name FROM locations WHERE id = '$location'";
-$loc_result = pg_query($conn, $loc_query);
+// Fetch location details based on location ID
+$loc_query = "SELECT id, name FROM locations WHERE id = $1";
+$loc_result = pg_query_params($conn, $loc_query, array($location_id));
 $loc_data = pg_fetch_assoc($loc_result);
 
 if (!$loc_data) {
@@ -31,8 +33,8 @@ $location_id = $loc_data['id'];
 $location_name = $loc_data['name'];
 
 // Fetch unique dates for this location
-$query = "SELECT DISTINCT DATE(recorded_date) AS date FROM pollution_data WHERE location_id = '$location_id' ORDER BY date DESC";
-$result = pg_query($conn, $query);
+$query = "SELECT DISTINCT DATE(recorded_date) AS date FROM pollution_data WHERE location_id = $1 ORDER BY date DESC";
+$result = pg_query_params($conn, $query, array($location_id));
 $dates = pg_fetch_all($result);
 pg_close($conn);
 ?>
