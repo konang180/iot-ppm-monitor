@@ -137,7 +137,7 @@ $locations = pg_fetch_all($location_result);
             .then(response => response.json())
             .then(data => {
                 document.getElementById('live-location').textContent = data.location || 'N/A';
-                document.getElementById('live-ppm').textContent = data.ppm || 'N/A';
+                document.getElementById('live-ppm').textContent = data.average_ppm || 'N/A';
             })
             .catch(error => console.error('Error fetching live data:', error));
     }
