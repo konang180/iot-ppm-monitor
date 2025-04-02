@@ -27,19 +27,21 @@ if (isset($_POST['update_location'])) {
     pg_query($conn, $query);
 }
 
-// Handle activating a location (set status to 't' for selected location, 'f' for others)
+// Handle activating a location
 if (isset($_POST['set_active_location'])) {
     $location_id = $_POST['set_active_location'];
-
-    // Validate that the location ID is an integer
     if (is_numeric($location_id) && intval($location_id) > 0) {
-        // Set all locations to inactive
         pg_query($conn, "UPDATE locations SET status = 'f'");
-
-        // Activate the selected location
         pg_query($conn, "UPDATE locations SET status = 't' WHERE id = '$location_id'");
-    } else {
-        echo "Invalid location ID.";
+    }
+}
+
+// Handle deleting a location
+if (isset($_POST['delete_location'])) {
+    $location_id = $_POST['delete_location'];
+    if (is_numeric($location_id) && intval($location_id) > 0) {
+        pg_query($conn, "DELETE FROM pollution_data WHERE location_id = '$location_id'");
+        pg_query($conn, "DELETE FROM locations WHERE id = '$location_id'");
     }
 }
 
@@ -57,6 +59,81 @@ pg_close($conn);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - Locations</title>
     <style>
+        /* CSS Styles */
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Admin Panel - Locations</h1>
+    <form action="admin.php" method="POST">
+        <input type="text" name="location_name" placeholder="Enter new location name" required>
+        <button type="submit" name="add_location">Add Location</button>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Location Name</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if ($locations) { foreach ($locations as $location) { ?>
+            <tr>
+                <td><?= $location['id'] ?></td>
+                <td><?= htmlspecialchars($location['name']) ?></td>
+                <td><?= $location['status'] == 't' ? 'Active' : 'Inactive' ?></td>
+                <td>
+                    <button onclick="editLocation('<?= $location['id'] ?>', '<?= htmlspecialchars($location['name']) ?>')">Update</button>
+                    <?php if ($location['status'] == 'f') { ?>
+                        <button onclick="setActiveLocation('<?= $location['id'] ?>')">Set Active</button>
+                    <?php } ?>
+                    <button onclick="deleteLocation('<?= $location['id'] ?>')" style="background-color:red;">Delete</button>
+                </td>
+            </tr>
+            <?php }} else { echo "<tr><td colspan='4'>No locations found.</td></tr>"; } ?>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function editLocation(id, name) {
+        document.querySelector('[name="location_id"]').value = id;
+        document.querySelector('[name="new_name"]').value = name;
+    }
+
+    function setActiveLocation(id) {
+        if (confirm("Are you sure you want to make this location active?")) {
+            submitForm('set_active_location', id);
+        }
+    }
+
+    function deleteLocation(id) {
+        if (confirm("Are you sure you want to delete this location? This action cannot be undone.")) {
+            submitForm('delete_location', id);
+        }
+    }
+
+    function submitForm(action, id) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = 'admin.php';
+        
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = action;
+        input.value = id;
+        
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+    }
+</script>
+
+<style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
@@ -125,92 +202,8 @@ pg_close($conn);
             background-color: #45a049;
         }
     </style>
-</head>
-<body>
-
-<div class="container">
-    <h1>Admin Panel - Locations</h1>
-
-    <!-- Add Location Form -->
-    <form action="admin.php" method="POST" class="add-location-form">
-        <div class="form-group">
-            <input type="text" name="location_name" placeholder="Enter new location name" required>
-        </div>
-        <button type="submit" name="add_location" class="form-btn">Add Location</button>
-    </form>
-
-    <!-- Update Location Form (Triggered on edit button) -->
-    <form action="admin.php" method="POST" class="update-location-form">
-        <div class="form-group">
-            <input type="text" name="new_name" placeholder="Enter new location name" required>
-        </div>
-        <input type="hidden" name="location_id" id="location_id">
-        <button type="submit" name="update_location" class="form-btn">Update Location</button>
-    </form>
-
-    <!-- Locations Table -->
-    <table class="location-table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Location Name</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php
-            if ($locations) {
-                foreach ($locations as $location) {
-                    echo "<tr>";
-                    echo "<td>" . $location['id'] . "</td>";
-                    echo "<td>" . htmlspecialchars($location['name']) . "</td>";
-                    echo "<td>" . ($location['status'] == 't' ? 'Active' : 'Inactive') . "</td>";
-                    echo "<td>";
-                    // Update button
-                    echo "<button type='button' onclick=\"editLocation('{$location['id']}', '{$location['name']}')\">Update</button>";
-
-                    // Set active button
-                    if ($location['status'] == 'f') {
-                        echo " <button type='button' onclick=\"setActiveLocation('{$location['id']}')\">Set Active</button>";
-                    }
-
-                    echo "</td>";
-                    echo "</tr>";
-                }
-            } else {
-                echo "<tr><td colspan='4'>No locations found.</td></tr>";
-            }
-            ?>
-        </tbody>
-    </table>
-</div>
-
-<script>
-    function editLocation(id, name) {
-        document.querySelector('.update-location-form').style.display = 'block';
-        document.querySelector('[name="location_id"]').value = id;
-        document.querySelector('[name="new_name"]').value = name;
-    }
-
-    function setActiveLocation(id) {
-        console.log("Location ID: " + id); // Debugging line to check id value
-        if (confirm("Are you sure you want to make this location active?")) {
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = 'admin.php';
-
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'set_active_location';
-            input.value = id;
-
-            form.appendChild(input);
-            document.body.appendChild(form);
-            form.submit();
-        }
-    }
-</script>
 
 </body>
 </html>
+
+

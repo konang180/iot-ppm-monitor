@@ -49,9 +49,14 @@ if (!$ppm_data) {
     exit;
 }
 
-// Prepare data for the chart
+// Prepare data for the chart with AM/PM formatting
 $hours = array_column($ppm_data, 'recorded_hour');
 $average_ppms = array_column($ppm_data, 'average_ppm');
+
+// Convert 24-hour format to 12-hour AM/PM format
+$hours_formatted = array_map(function($hour) {
+    return date("g A", strtotime("$hour:00"));
+}, $hours);
 ?>
 
 <!DOCTYPE html>
@@ -99,7 +104,7 @@ $average_ppms = array_column($ppm_data, 'average_ppm');
     var ppmChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: <?php echo json_encode($hours); ?>,  // Hours of the day
+            labels: <?php echo json_encode($hours_formatted); ?>,  // Now uses AM/PM format
             datasets: [{
                 label: 'Average PPM',
                 data: <?php echo json_encode($average_ppms); ?>,  // Average PPM values
