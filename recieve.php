@@ -15,6 +15,9 @@ if (!$conn) {
 
 // Get data from NodeMCU
 $ppm = $_POST['ppm'] ?? null; // PPM value
+date_default_timezone_set('Asia/Kolkata'); // Set timezone to IST
+
+
 $hour = date('H'); // Get current hour
 $date = date('Y-m-d'); // Get current date
 
