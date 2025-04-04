@@ -111,15 +111,17 @@ pg_close($conn);
     <h1>Recorded Dates for <?php echo htmlspecialchars($location_name); ?></h1>
 
     <div class="date-list">
-        <?php
-        if ($dates) {
-            foreach ($dates as $row) {
-                echo "<button onclick=\"window.location.href='graph.php?location=" . urlencode($location_name) . "&date=" . urlencode($row['date']) . "'\">" . htmlspecialchars($row['date']) . "</button>";
-            }
-        } else {
-            echo "<p>No data recorded for this location.</p>";
-        }
-        ?>
+       <?php
+if ($dates) {
+    foreach ($dates as $row) {
+        $formattedDate = date("d/m/Y", strtotime($row['date'])); // Convert to DD/MM/YYYY
+        echo "<button onclick=\"window.location.href='graph.php?location=" . urlencode($location_name) . "&date=" . urlencode($row['date']) . "'\">" . htmlspecialchars($formattedDate) . "</button>";
+    }
+} else {
+    echo "<p>No data recorded for this location.</p>";
+}
+?>
+
     </div>
 </div>
 
