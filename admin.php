@@ -100,6 +100,7 @@ pg_close($conn);
             color: white;
         }
         .btn-update { background: #ff9800; }
+        .btn-add { background: #ff9800; }
         .btn-active { background: #4CAF50; }
         .btn-delete { background: red; }
         .btn:hover { opacity: 0.8; }
@@ -165,6 +166,41 @@ pg_close($conn);
     function hideUpdateForm() {
         document.getElementById('updateForm').style.display = 'none';
     }
+
+
+    function setActiveLocation(id) {
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = "admin.php";
+
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "set_active_location";
+        input.value = id;
+
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    function deleteLocation(id) {
+        if (!confirm("Are you sure you want to delete this location?")) return;
+
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = "admin.php";
+
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "delete_location";
+        input.value = id;
+
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+
 </script>
 </body>
 </html>
