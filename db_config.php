@@ -3,4 +3,4 @@ $host = "dpg-d091rrqdbo4c73eeksg0-a.singapore-postgres.render.com";  // Full hos
 $port = "5432";
 $dbname = "mydb_xyz123_vz5r";
 $user = "konang";
-$password = "HbpK0zGuFkHURjPM9pK5c5fGZo6pIjOU"; ?>
+$password = "nvwp7dNApB610bHuAC7NlIIYlaJmRnC4"; ?>
