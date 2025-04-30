@@ -1,9 +1,5 @@
 <?php
-$host = "dpg-cvlai4vgi27c73dm6eb0-a.singapore-postgres.render.com";
-$port = "5432";
-$dbname = "mydb_xyz123";
-$user = "konang";
-$password = "HbpK0zGuFkHURjPM9pK5c5fGZo6pIjOU";
+include('db_config.php');
 $conn = pg_connect("host=$host port=$port dbname=$dbname user=$user password=$password");
 if (!$conn) die("Connection failed: " . pg_last_error());
 
