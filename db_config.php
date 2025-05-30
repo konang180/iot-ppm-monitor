@@ -1,6 +1,6 @@
 <?php 
-$host = "dpg-d091rrqdbo4c73eeksg0-a.singapore-postgres.render.com";  // Full host with domain
+$host = "dpg-d0sgt0k9c44c73f5php0-a.singapore-postgres.render.com";
 $port = "5432";
-$dbname = "mydb_xyz123_vz5r";
+$dbname = "mydb_xyz123_vz5r_xd5n";
 $user = "konang";
-$password = "nvwp7dNApB610bHuAC7NlIIYlaJmRnC4"; ?>
+$password = "SVdF7bKuWnpwROAPjXCTxp9Kt77uAZQ4";?>
